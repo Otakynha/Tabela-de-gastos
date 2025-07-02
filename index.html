@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Gastos Mensais</title>
   <style>
+    <main>
     body {
       font-family: Arial, sans-serif;
       background: #f0f0f0;
@@ -46,6 +47,7 @@
     <input type="text" id="item" placeholder="Item comprado">
     <input type="number" id="valor" placeholder="Valor (R$)">
     <button onclick="adicionarGasto()">Adicionar</button>
+    <button onclick="limparGastos()">Limpar Tudo</button>
   </div>
 
   <table>
@@ -53,45 +55,4 @@
       <tr>
         <th>Mês</th>
         <th>Item</th>
-        <th>Valor (R$)</th>
-        <th>Restante (R$)</th>
-      </tr>
-    </thead>
-    <tbody id="tabela-gastos">
-      <!-- Os gastos aparecerão aqui -->
-    </tbody>
-  </table>
-
-  <script>
-    function adicionarGasto() {
-      const mes = document.getElementById("mes").value;
-      const item = document.getElementById("item").value;
-      const valor = parseFloat(document.getElementById("valor").value);
-      const restante = 200 - valor;
-
-      if (!mes || !item || isNaN(valor)) {
-        alert("Preencha todos os campos corretamente!");
-        return;
-      }
-
-      const tabela = document.getElementById("tabela-gastos");
-
-      const novaLinha = document.createElement("tr");
-      novaLinha.innerHTML = `
-        <td>${mes}</td>
-        <td>${item}</td>
-        <td>${valor.toFixed(2)}</td>
-        <td>${restante.toFixed(2)}</td>
-      `;
-
-      tabela.appendChild(novaLinha);
-
-      // Limpa os campos
-      document.getElementById("mes").value = "";
-      document.getElementById("item").value = "";
-      document.getElementById("valor").value = "";
-    }
-  </script>
-
-</body>
-</html>
+        <th>Valor (R$
