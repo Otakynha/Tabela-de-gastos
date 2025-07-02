@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Gastos Mensais</title>
   <style>
-    <main>
     body {
       font-family: Arial, sans-serif;
       background: #f0f0f0;
@@ -40,19 +39,89 @@
 </head>
 <body>
 
-  <h1>Tabela de Gastos Mensais</h1>
+  <header>
+    <h1>Tabela de Gastos Mensais</h1>
+  </header>
 
-  <div>
-    <input type="text" id="mes" placeholder="Mês (ex: Julho)">
-    <input type="text" id="item" placeholder="Item comprado">
-    <input type="number" id="valor" placeholder="Valor (R$)">
-    <button onclick="adicionarGasto()">Adicionar</button>
-    <button onclick="limparGastos()">Limpar Tudo</button>
-  </div>
+  <main>
+    <section>
+      <input type="text" id="mes" placeholder="Mês (ex: Julho)">
+      <input type="text" id="item" placeholder="Item comprado">
+      <input type="number" id="valor" placeholder="Valor (R$)">
+      <button onclick="adicionarGasto()">Adicionar</button>
+      <button onclick="limparGastos()">Limpar Tudo</button>
+    </section>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Mês</th>
-        <th>Item</th>
-        <th>Valor (R$
+    <section>
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>Item</th>
+            <th>Valor (R$)</th>
+            <th>Restante (R$)</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-gastos">
+          <!-- Os gastos aparecerão aqui -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    let gastos = JSON.parse(localStorage.getItem("gastos")) || [];
+
+    function salvarGastos() {
+      localStorage.setItem("gastos", JSON.stringify(gastos));
+    }
+
+    function exibirGastos() {
+      const tabela = document.getElementById("tabela-gastos");
+      tabela.innerHTML = "";
+
+      gastos.forEach((gasto) => {
+        const restante = 200 - gasto.valor;
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${gasto.mes}</td>
+          <td>${gasto.item}</td>
+          <td>${gasto.valor.toFixed(2)}</td>
+          <td>${restante.toFixed(2)}</td>
+        `;
+        tabela.appendChild(linha);
+      });
+    }
+
+    function adicionarGasto() {
+      const mes = document.getElementById("mes").value.trim();
+      const item = document.getElementById("item").value.trim();
+      const valor = parseFloat(document.getElementById("valor").value);
+
+      if (!mes || !item || isNaN(valor)) {
+        alert("Preencha todos os campos corretamente!");
+        return;
+      }
+
+      gastos.push({ mes, item, valor });
+      salvarGastos();
+      exibirGastos();
+
+      document.getElementById("mes").value = "";
+      document.getElementById("item").value = "";
+      document.getElementById("valor").value = "";
+    }
+
+    function limparGastos() {
+      if (confirm("Deseja mesmo apagar tudo?")) {
+        gastos = [];
+      salvarGastos();
+        exibirGastos();
+      }
+    }
+
+    exibirGastos();
+  </script>
+
+</body>
+</html>
