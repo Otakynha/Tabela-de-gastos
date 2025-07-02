@@ -5,42 +5,64 @@
   <title>Gastos Mensais</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      padding: 20px;
+      background-image: url('dexter.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
+
     h1 {
       text-align: center;
+      color: #a60000;
     }
+
     input, button {
       padding: 10px;
       margin: 5px;
       font-size: 16px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
       margin-top: 20px;
     }
+
     th, td {
       border: 1px solid #ccc;
       padding: 12px;
       text-align: center;
     }
+
     th {
       background-color: #333;
       color: white;
     }
+
     tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+
+    #total-geral {
+      font-size: 20px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #fff8dc, #ffd700, #ffcc00, #fff8dc);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 1px 1px 2px #b8860b, 0 0 10px #ffec8b, 0 0 40px #ffd700;
+    font-family: 'Arial Black', sans-serif;
+    text-align: center;
+    margin-top: 10px;
+      
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Tabela de Gastos Mensais</h1>
+    <h1>Tabela de Gastos</h1>
   </header>
 
   <main>
@@ -59,13 +81,18 @@
             <th>Mês</th>
             <th>Item</th>
             <th>Valor (R$)</th>
-            <th>Restante (R$)</th>
+            <th>Restante do mês (R$)</th>
           </tr>
         </thead>
         <tbody id="tabela-gastos">
-          <!-- Os gastos aparecerão aqui -->
+          <!-- Os gastos vão aparecer aqui -->
         </tbody>
       </table>
+
+      <!-- TOTAL RESTANTE GERAL -->
+      <div id="total-geral">
+        Total restante: R$ 0,00
+      </div>
     </section>
   </main>
 
@@ -76,12 +103,38 @@
       localStorage.setItem("gastos", JSON.stringify(gastos));
     }
 
+    function calcularRestantesPorMes() {
+      const totais = {};
+      gastos.forEach(g => {
+        if (!totais[g.mes]) {
+          totais[g.mes] = 0;
+        }
+        totais[g.mes] += g.valor;
+      });
+      return totais;
+    }
+
     function exibirGastos() {
       const tabela = document.getElementById("tabela-gastos");
       tabela.innerHTML = "";
 
+      const totais = calcularRestantesPorMes();
+      const restantesPorMes = {};
+      let acumuladoPorMes = {};
+      let totalRestanteGeral = 0;
+
       gastos.forEach((gasto) => {
-        const restante = 200 - gasto.valor;
+        if (!acumuladoPorMes[gasto.mes]) {
+          acumuladoPorMes[gasto.mes] = 0;
+        }
+        acumuladoPorMes[gasto.mes] += gasto.valor;
+        const restante = 200 - acumuladoPorMes[gasto.mes];
+
+        if (!restantesPorMes[gasto.mes]) {
+          restantesPorMes[gasto.mes] = 200;
+        }
+        restantesPorMes[gasto.mes] -= gasto.valor;
+
         const linha = document.createElement("tr");
         linha.innerHTML = `
           <td>${gasto.mes}</td>
@@ -91,6 +144,14 @@
         `;
         tabela.appendChild(linha);
       });
+
+      // Soma dos valores restantes de todos os meses
+      for (const mes in restantesPorMes) {
+        totalRestanteGeral += restantesPorMes[mes];
+      }
+
+      // Atualiza a div com o total geral
+      document.getElementById("total-geral").innerText = `Total restante: R$ ${totalRestanteGeral.toFixed(2)}`;
     }
 
     function adicionarGasto() {
@@ -115,13 +176,17 @@
     function limparGastos() {
       if (confirm("Deseja mesmo apagar tudo?")) {
         gastos = [];
-      salvarGastos();
+        salvarGastos();
         exibirGastos();
       }
     }
 
+    // Ao abrir a página
     exibirGastos();
   </script>
+
+
+  
 
 </body>
 </html>
