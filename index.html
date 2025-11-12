@@ -5,7 +5,7 @@
   <title>Ganhos e Gastos</title>
   <style>
     body {
-      background-image: url('jenna.jpg');
+      background-image: url('dexter.jpg');
       background-size: cover;
       background-repeat: no-repeat;
       background-attachment: fixed;
@@ -82,6 +82,12 @@
       text-align: center;
       margin-top: 15px;
     }
+
+    /* ajustes para celular */
+    @media (max-width: 600px) {
+      input, button { width: 92%; display: block; }
+      section { padding: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -93,13 +99,13 @@
   <main>
     <section>
       <h3>Adicionar ganho</h3>
-      <input type="number" id="valor-ganho" placeholder="Valor ganho (R$)">
+      <input type="number" step="0.01" id="valor-ganho" placeholder="Valor ganho (R$)">
       <button id="btn-ganho">Adicionar ganho</button>
 
       <h3>Adicionar gasto</h3>
       <input type="text" id="mes" placeholder="Mês (ex: Julho)">
       <input type="text" id="item" placeholder="Item comprado">
-      <input type="number" id="valor" placeholder="Valor (R$)">
+      <input type="number" step="0.01" id="valor" placeholder="Valor (R$)">
       <button id="btn-gasto">Adicionar gasto</button>
       <button id="btn-limpar">Limpar Tudo</button>
     </section>
@@ -130,12 +136,18 @@
 
   <script>
     window.onload = function() {
-      let gastos = JSON.parse(localStorage.getItem("gastos")) || [];
-      let totalGanho = parseFloat(localStorage.getItem("totalGanho")) || 0;
+      // recuperar dados do localStorage (guardados com JSON)
+      let gastos = JSON.parse(localStorage.getItem("gastos") || "[]");
+      let totalGanho = JSON.parse(localStorage.getItem("totalGanho") || "0");
 
       function salvarDados() {
+        // salvar como JSON (mantém tipo número)
         localStorage.setItem("gastos", JSON.stringify(gastos));
-        localStorage.setItem("totalGanho", totalGanho.toFixed(2));
+        localStorage.setItem("totalGanho", JSON.stringify(totalGanho));
+      }
+
+      function formatar(v) {
+        return Number(v).toFixed(2);
       }
 
       function exibirGastos() {
@@ -145,31 +157,35 @@
         let totalGasto = 0;
 
         gastos.forEach(gasto => {
+          // garantir que valor é número
+          gasto.valor = Number(gasto.valor) || 0;
+
           const linha = document.createElement("tr");
           linha.innerHTML = `
             <td>${gasto.mes}</td>
             <td>${gasto.item}</td>
-            <td>${gasto.valor.toFixed(2)}</td>
+            <td>${formatar(gasto.valor)}</td>
           `;
           tabela.appendChild(linha);
           totalGasto += gasto.valor;
         });
 
-        const restante = totalGanho - totalGasto;
+        const restante = Number(totalGanho) - Number(totalGasto);
 
-        document.getElementById("total-ganho").innerText = totalGanho.toFixed(2);
-        document.getElementById("total-gasto").innerText = totalGasto.toFixed(2);
-        document.getElementById("total-geral").innerText = `🟡 Restante atual: R$ ${restante.toFixed(2)}`;
+        document.getElementById("total-ganho").innerText = formatar(totalGanho);
+        document.getElementById("total-gasto").innerText = formatar(totalGasto);
+        document.getElementById("total-geral").innerText = `🟡 Restante atual: R$ ${formatar(restante)}`;
       }
 
       function adicionarGanho() {
-        const valor = parseFloat(document.getElementById("valor-ganho").value);
-        if (isNaN(valor) || valor <= 0) {
+        const raw = document.getElementById("valor-ganho").value;
+        const valor = Number(raw);
+        if (!raw || isNaN(valor) || valor <= 0) {
           alert("Digite um valor válido para o ganho!");
           return;
         }
 
-        totalGanho += valor;
+        totalGanho = Number(totalGanho) + Number(valor);
         salvarDados();
         exibirGastos();
         document.getElementById("valor-ganho").value = "";
@@ -178,14 +194,16 @@
       function adicionarGasto() {
         const mes = document.getElementById("mes").value.trim();
         const item = document.getElementById("item").value.trim();
-        const valor = parseFloat(document.getElementById("valor").value);
+        const raw = document.getElementById("valor").value;
+        const valor = Number(raw);
 
-        if (!mes || !item || isNaN(valor)) {
-          alert("Preencha todos os campos corretamente!");
+        if (!mes || !item || !raw || isNaN(valor) || valor <= 0) {
+          alert("Preencha todos os campos corretamente (valor > 0)!");
           return;
         }
 
-        gastos.push({ mes, item, valor });
+        // garantir que armazenamos número
+        gastos.push({ mes, item, valor: Number(valor) });
         salvarDados();
         exibirGastos();
 
@@ -211,4 +229,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
