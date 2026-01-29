@@ -1,232 +1,162 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Ganhos e Gastos</title>
-  <style>
-    body {
-      background-image: url('jenna.jpg');
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      font-family: Arial, sans-serif;
-      color: #222;
-    }
-
-    h1 {
-      text-align: center;
-      color: #a60000;
-      text-shadow: 1px 1px 3px #fff;
-    }
-
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      font-size: 16px;
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background-color: #a60000;
-      color: white;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #7a0000;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 12px;
-      text-align: center;
-    }
-
-    th {
-      background-color: #333;
-      color: white;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    #totais {
-      font-size: 18px;
-      font-weight: bold;
-      margin-top: 20px;
-      background: rgba(255,255,255,0.8);
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    #total-geral {
-      font-size: 22px;
-      font-weight: bold;
-      background: linear-gradient(90deg, #fff8dc, #ffd700, #ffcc00, #fff8dc);
-      color: transparent;
-      -webkit-background-clip: text;
-      background-clip: text;
-      text-shadow: 1px 1px 2px #b8860b, 0 0 10px #ffec8b, 0 0 40px #ffd700;
-      font-family: 'Arial Black', sans-serif;
-      text-align: center;
-      margin-top: 15px;
-    }
-
-    /* ajustes para celular */
-    @media (max-width: 600px) {
-      input, button { width: 92%; display: block; }
-      section { padding: 10px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Planner Financeiro 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{
+  margin:0;
+  background:url("jenna.jpg") center/cover fixed;
+  font-family:'Cinzel', serif;
+  color:#eee;
+}
+.overlay{
+  background:rgba(0,0,0,0.45); /* menos escuro pra Jenna aparecer mais */
+  min-height:100vh;
+  padding:20px;
+}
+h1{
+  text-align:center;
+  color:#b300ff;
+  text-shadow:0 0 15px #8000ff;
+}
+select,input,button{
+  padding:10px;
+  margin:5px;
+  border-radius:6px;
+  border:none;
+}
+button{
+  background:#5e00a1;
+  color:white;
+  cursor:pointer;
+}
+button:hover{background:#3a0066;}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#111;
+}
+th,td{
+  border:1px solid #555;
+  padding:10px;
+  text-align:center;
+}
+th{background:#2b003d;}
+#totais{
+  margin-top:15px;
+  font-size:18px;
+  text-align:center;
+}
+.mes{
+  margin-top:30px;
+  border:2px solid #5e00a1;
+  border-radius:10px;
+  padding:15px;
+  box-shadow:0 0 15px #8000ff;
+}
+.apagar{
+  color:red;
+  cursor:pointer;
+}
+</style>
 </head>
 <body>
+<div class="overlay">
+<h1>🖤 Planner Financeiro 2026</h1>
 
-  <header>
-    <h1>Controle de Ganhos e Gastos</h1>
-  </header>
+<div style="text-align:center">
+<select id="mes">
+  <option>Janeiro</option><option>Fevereiro</option><option>Março</option>
+  <option>Abril</option><option>Maio</option><option>Junho</option>
+  <option>Julho</option><option>Agosto</option><option>Setembro</option>
+  <option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+</select>
+<br>
+<input type="number" id="ganho" placeholder="Valor ganho (R$)">
+<button onclick="addGanho()">Adicionar ganho</button>
+<br>
+<input type="text" id="item" placeholder="Descrição do gasto">
+<input type="number" id="valor" placeholder="Valor gasto (R$)">
+<button onclick="addGasto()">Adicionar gasto</button>
+</div>
 
-  <main>
-    <section>
-      <h3>Adicionar ganho</h3>
-      <input type="number" step="0.01" id="valor-ganho" placeholder="Valor ganho (R$)">
-      <button id="btn-ganho">Adicionar ganho</button>
+<div id="agenda"></div>
+<div id="totais"></div>
+</div>
 
-      <h3>Adicionar gasto</h3>
-      <input type="text" id="mes" placeholder="Mês (ex: Julho)">
-      <input type="text" id="item" placeholder="Item comprado">
-      <input type="number" step="0.01" id="valor" placeholder="Valor (R$)">
-      <button id="btn-gasto">Adicionar gasto</button>
-      <button id="btn-limpar">Limpar Tudo</button>
-    </section>
+<script>
+let dados = JSON.parse(localStorage.getItem("planner2026")) || {};
+let ganhos = JSON.parse(localStorage.getItem("ganhos2026")) || 0;
 
-    <section>
-      <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th>Item</th>
-            <th>Valor (R$)</th>
-          </tr>
-        </thead>
-        <tbody id="tabela-gastos">
-        </tbody>
-      </table>
+function salvar(){
+  localStorage.setItem("planner2026", JSON.stringify(dados));
+  localStorage.setItem("ganhos2026", ganhos);
+}
 
-      <div id="totais">
-        🟢 Total ganho: R$ <span id="total-ganho">0,00</span><br>
-        🔴 Total gasto: R$ <span id="total-gasto">0,00</span><br>
-      </div>
+function addGanho(){
+  let valor = parseFloat(document.getElementById("ganho").value);
+  if(isNaN(valor)) return alert("Digite um ganho válido!");
+  ganhos += valor;
+  salvar();
+  render();
+  document.getElementById("ganho").value="";
+}
 
-      <div id="total-geral">
-        🟡 Restante atual: R$ 0,00
-      </div>
-    </section>
-  </main>
+function addGasto(){
+  let mes = document.getElementById("mes").value;
+  let item = document.getElementById("item").value;
+  let valor = parseFloat(document.getElementById("valor").value);
 
-  <script>
-    window.onload = function() {
-      // recuperar dados do localStorage (guardados com JSON)
-      let gastos = JSON.parse(localStorage.getItem("gastos") || "[]");
-      let totalGanho = JSON.parse(localStorage.getItem("totalGanho") || "0");
+  if(!item || isNaN(valor)) return alert("Preencha tudo!");
 
-      function salvarDados() {
-        // salvar como JSON (mantém tipo número)
-        localStorage.setItem("gastos", JSON.stringify(gastos));
-        localStorage.setItem("totalGanho", JSON.stringify(totalGanho));
-      }
+  if(!dados[mes]) dados[mes]=[];
+  dados[mes].push({item,valor});
+  salvar();
+  render();
+}
 
-      function formatar(v) {
-        return Number(v).toFixed(2);
-      }
+function apagarGasto(mes,index){
+  dados[mes].splice(index,1);
+  salvar();
+  render();
+}
 
-      function exibirGastos() {
-        const tabela = document.getElementById("tabela-gastos");
-        tabela.innerHTML = "";
+function render(){
+  let agenda = document.getElementById("agenda");
+  let totalGasto = 0;
+  agenda.innerHTML="";
 
-        let totalGasto = 0;
+  for(let mes in dados){
+    let totalMes = 0;
+    let html = `<div class="mes"><h2>${mes}</h2>
+    <table><tr><th>Item</th><th>Valor</th><th></th></tr>`;
 
-        gastos.forEach(gasto => {
-          // garantir que valor é número
-          gasto.valor = Number(gasto.valor) || 0;
+    dados[mes].forEach((g,i)=>{
+      totalMes += g.valor;
+      totalGasto += g.valor;
+      html+=`<tr>
+        <td>${g.item}</td>
+        <td>R$ ${g.valor.toFixed(2)}</td>
+        <td class="apagar" onclick="apagarGasto('${mes}',${i})">🗑️</td>
+      </tr>`;
+    });
 
-          const linha = document.createElement("tr");
-          linha.innerHTML = `
-            <td>${gasto.mes}</td>
-            <td>${gasto.item}</td>
-            <td>${formatar(gasto.valor)}</td>
-          `;
-          tabela.appendChild(linha);
-          totalGasto += gasto.valor;
-        });
+    html+=`</table>
+    <p>Total do mês: R$ ${totalMes.toFixed(2)}</p></div>`;
+    agenda.innerHTML+=html;
+  }
 
-        const restante = Number(totalGanho) - Number(totalGasto);
+  let restante = ganhos - totalGasto;
+  document.getElementById("totais").innerHTML = `
+    <h2>💚 Total ganho: R$ ${ganhos.toFixed(2)}</h2>
+    <h2>🔴 Total gasto: R$ ${totalGasto.toFixed(2)}</h2>
+    <h2>🟡 Restante: R$ ${restante.toFixed(2)}</h2>
+  `;
+}
 
-        document.getElementById("total-ganho").innerText = formatar(totalGanho);
-        document.getElementById("total-gasto").innerText = formatar(totalGasto);
-        document.getElementById("total-geral").innerText = `🟡 Restante atual: R$ ${formatar(restante)}`;
-      }
-
-      function adicionarGanho() {
-        const raw = document.getElementById("valor-ganho").value;
-        const valor = Number(raw);
-        if (!raw || isNaN(valor) || valor <= 0) {
-          alert("Digite um valor válido para o ganho!");
-          return;
-        }
-
-        totalGanho = Number(totalGanho) + Number(valor);
-        salvarDados();
-        exibirGastos();
-        document.getElementById("valor-ganho").value = "";
-      }
-
-      function adicionarGasto() {
-        const mes = document.getElementById("mes").value.trim();
-        const item = document.getElementById("item").value.trim();
-        const raw = document.getElementById("valor").value;
-        const valor = Number(raw);
-
-        if (!mes || !item || !raw || isNaN(valor) || valor <= 0) {
-          alert("Preencha todos os campos corretamente (valor > 0)!");
-          return;
-        }
-
-        // garantir que armazenamos número
-        gastos.push({ mes, item, valor: Number(valor) });
-        salvarDados();
-        exibirGastos();
-
-        document.getElementById("mes").value = "";
-        document.getElementById("item").value = "";
-        document.getElementById("valor").value = "";
-      }
-
-      function limparTudo() {
-        if (confirm("Deseja mesmo apagar tudo?")) {
-          gastos = [];
-          totalGanho = 0;
-          salvarDados();
-          exibirGastos();
-        }
-      }
-
-      document.getElementById("btn-ganho").onclick = adicionarGanho;
-      document.getElementById("btn-gasto").onclick = adicionarGasto;
-      document.getElementById("btn-limpar").onclick = limparTudo;
-
-      exibirGastos();
-    }
-  </script>
+render();
+</script>
 </body>
-  </html>
+</html>
